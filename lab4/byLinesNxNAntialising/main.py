@@ -1,5 +1,6 @@
 import math
 import glfw
+import random
 from OpenGL.GL import *
  
 buffer = bytearray(1000 * 1000 * 3)
@@ -9,6 +10,8 @@ vertices = []
 futurepointsup = []
 futurepointsdown = []
 fl = 0
+downleft = [500, 500]
+upright = [0, 0]
  
 for j in range(0, 1000 * 1000):
     buffer[j * 3] = 0
@@ -23,7 +26,7 @@ def cursor_pos(window, xpos, ypos):
  
  
 def mouse_button(window, button, action, mods):
-    global cx, cy, fl, futurepointsup, futurepointsdown
+    global cx, cy, fl, futurepointsup, futurepointsdown, upright, downleft
     if fl == 2:
         return
     if action == glfw.PRESS:
@@ -39,8 +42,8 @@ def mouse_button(window, button, action, mods):
                     filllineup(futurepointsup[counter][0], futurepointsup[counter][1])
                     counter += 1
  
-                filllinedown(cx, cy-1)
-                   
+                filllinedown(cx, cy - 1)
+ 
                 counter = 0
                 while True:
                     if counter >= len(futurepointsdown):
@@ -49,30 +52,59 @@ def mouse_button(window, button, action, mods):
                     counter += 1
                 fl = 2
                 slidingWindow()
-                glDrawPixels(1000,1000,GL_RGB,GL_UNSIGNED_BYTE,buffer)
                 return
+ 
+            if cx > upright[0]:
+                upright[0] = cx
+ 
+            if cx < downleft[0]:
+                downleft[0] = cx
+ 
+            if cy > upright[1]:
+                upright[1] = cy
+ 
+            if cy < downleft[1]:
+                downleft[1] = cy
+ 
             drawpixel(cx, cy)
             vertices.append([cx, cy])
             if len(vertices) > 1:
                 drawline(vertices[len(vertices) - 2][0], vertices[len(vertices) - 2][1], vertices[len(vertices) - 1][0],
                          vertices[len(vertices) - 1][1])
-            
+ 
  
 def key_callback(window, key, scancode, action, mods):
-    global vertices, fl
+    global vertices, fl, cx, cy, futurepointsup, futurepointsdown, downleft, upright
     if action == glfw.PRESS:
         if key == glfw.KEY_ENTER:
             if fl == 0:
                 fl = 1
                 drawline(vertices[len(vertices) - 1][0], vertices[len(vertices) - 1][1], vertices[0][0], vertices[0][1])
+            else:
+                cx = 0
+                cy = 0
+                vertices = []
+                futurepointsup = []
+                futurepointsdown = []
+                fl = 0
+                downleft = [500, 500]
+                upright = [0, 0]
+ 
+                for i in range(0, 1000 * 1000):
+                    buffer[i * 3] = 0
+                    buffer[i * 3 + 1] = 0
+                    buffer[i * 3 + 2] = 0
  
  
 def drawpixel(x, y):
     index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
-    buffer[index] =255 
-    buffer[index + 1] = 255
-    buffer[index + 2] = 100
-
+ 
+    for i in range(index, index + 6):
+        buffer[i] = 255
+ 
+    for i in range(index + 3000, index + 3006):
+        buffer[i] = 255
+ 
  
 def drawline(x1, y1, x2, y2):
     length = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
@@ -94,18 +126,6 @@ def check(x, y):
         return True
     else:
         return False
- 
- 
-'''
-def fillline(x, y):
-    while True:
-        if not check(x, y):
-            drawpixel(x, y)
-        else:
-            return
-        fillline(x + 1, y)
-        fillline(x - 1, y)
-'''
  
  
 def filllineup(x, y):
@@ -149,41 +169,8 @@ def filllineup(x, y):
  
     for i in range(minx, maxx):
         drawpixel(i, y)
-def getAllPixels(i):
-     toUpdateR =0
-     counter = 0
-     toUpdateR += buffer[i-3]
-     toUpdateR += buffer[i+3]
-     toUpdateR += buffer[i+3000]
-     toUpdateR += buffer[i+3003]
-     toUpdateR += buffer[i+2997]
-     toUpdateR += (buffer[i-3003])
-     toUpdateR += (buffer[i-2997])
-     toUpdateR += buffer[i-3000]
-
-     return toUpdateR // 9
-def updateAllNeighbours(i ,newVal):
-    buffer[i] = newVal #+ 15
-    buffer[i-3] = newVal# + 15
-    buffer[i+3] =newVal #+ 15
-    buffer[i+3000] = newVal# + 15
-    buffer[i+3003] = newVal #+ 15
-    buffer[i+2997] = newVal #+ 15
-    buffer[i-3003] = newVal #+ 15
-    buffer[i-3000] = newVal #+ 15
-    buffer[i-2997] = newVal #+ 15
-def slidingWindow():
-    for i in range(3003, len(buffer) - 3003):
-        if(buffer[i] != 0 or buffer[i+1] != 0 or buffer[i+2] !=0):
-            
-            toUpdateR = getAllPixels(i) 
-            toUpdateG = getAllPixels(i+1) 
-            toUpdateB = getAllPixels(i+2) 
-            updateAllNeighbours(i, toUpdateR)
-            updateAllNeighbours(i+1, toUpdateG)
-            updateAllNeighbours(i+2, toUpdateB)
-
-
+ 
+ 
 def filllinedown(x, y):
     if check(x, y):
         return
@@ -225,6 +212,45 @@ def filllinedown(x, y):
  
     for i in range(minx, maxx):
         drawpixel(i, y)
+ 
+ 
+def getAllPixels(i):
+    toUpdateR = 0
+    toUpdateR += buffer[i + 3]
+    toUpdateR += buffer[i - 3]
+    toUpdateR += buffer[i + 3000]
+    toUpdateR += buffer[i - 3000]
+    toUpdateR += buffer[i + 3003]
+    toUpdateR += (buffer[i - 3003])
+    toUpdateR += buffer[i + 2997]
+    toUpdateR += (buffer[i - 2997])
+ 
+    return toUpdateR // 8
+ 
+ 
+def updateAllNeighbours(i, newVal):
+    buffer[i] = newVal
+    buffer[i - 3] = newVal
+    buffer[i + 3] = newVal
+    buffer[i + 3000] = newVal
+    buffer[i + 3003] = newVal
+    buffer[i + 2997] = newVal
+    buffer[i - 3003] = newVal
+    buffer[i - 3000] = newVal
+    buffer[i - 2997] = newVal
+ 
+ 
+def slidingWindow():
+    start = downleft[0] * 2 * 3 + downleft[1] * 2 * 1000 * 3
+    end = upright[0] * 2 * 3 + upright[1] * 2 * 1000 * 3
+    for i in range(start, end):
+        if buffer[i] != 0 or buffer[i + 1] != 0 or buffer[i + 2] != 0:
+            toUpdateR = getAllPixels(i)
+            toUpdateG = getAllPixels(i + 1)
+            toUpdateB = getAllPixels(i + 2)
+            updateAllNeighbours(i, toUpdateR)
+            updateAllNeighbours(i + 1, toUpdateG)
+            updateAllNeighbours(i + 2, toUpdateB)
  
  
 def main():
