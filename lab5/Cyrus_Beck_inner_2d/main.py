@@ -46,23 +46,24 @@ def mouse_button(window, button, action, mods):
                 if cy < downleft[1]:
                     downleft[1] = cy
     
-                drawpixel(cx, cy)
+                drawpixelCustom(cx, cy,[255,255,255])
                 vertices.append([cx, cy])
                 if len(vertices) > 1:
-                    drawline(vertices[len(vertices) - 2][0], vertices[len(vertices) - 2][1], vertices[len(vertices) - 1][0],
-                             vertices[len(vertices) - 1][1])
+                    drawlineCustom(vertices[len(vertices) - 2][0], vertices[len(vertices) - 2][1], vertices[len(vertices) - 1][0],vertices[len(vertices) - 1][1],[255,255,255])
                     edge =([[vertices[len(vertices) - 2][0], vertices[len(vertices) - 2][1]],[vertices[len(vertices) - 1][0],
                              vertices[len(vertices) - 1][1]]])
                     edges.append(edge)
 
 
             else: 
-                drawpixel(cx, cy)
+                drawpixelCustom(cx, cy,[255,255,255])
                  
                 lineseVertices.append([cx, cy])
                 if len(lineseVertices) % 2 == 0:
-                    drawline(lineseVertices[len(lineseVertices) - 2][0], lineseVertices[len(lineseVertices) - 2][1], lineseVertices[len(lineseVertices) - 1][0],
-                             lineseVertices[len(lineseVertices) - 1][1])
+                    drawlineCustom(lineseVertices[len(lineseVertices) - 2][0], lineseVertices[len(lineseVertices) - 2][1], lineseVertices[len(lineseVertices) - 1][0],
+                             lineseVertices[len(lineseVertices) - 1][1],[255,255,255])
+
+
 def drawpixelCustom(x, y,color):
     index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
      
@@ -79,14 +80,9 @@ def drawpixelCustom(x, y,color):
         buffer[i+1] = color[1]
         buffer[i+2] = color[2]
 
-def drawpixelRed(x, y):
-    index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
- 
-    for i in range(index, index + 6,3):
-        buffer[i] = 255
-        
+
 def inside(x,y):
-    print(maxX, minX,maxY,minY)
+
     return x < maxX and x > minX and y < maxY and y > minY
 def mult(a,b):
     return a[0] * b[0] + a[1] * b[1]
@@ -122,7 +118,7 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
             N = [edgeDirY, -edgeDirX]
 
         counter+=1
-        drawLineCustom((vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2 ,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2,(vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2+ N[0]/5,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2+ N[1]/5,[255,0,0])
+        drawlineCustom((vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2 ,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2,(vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2+ N[0]/5,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2+ N[1]/5,[255,0,0])
        
         Qx = P1X - (vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2
         Qy = P1Y - (vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2
@@ -131,9 +127,9 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
         Q = [Qx, Qy]
         Pn = mult(dirL, N)
         Qn = mult(Q, N)
-        print(Pn,"Pn",  Qn, "Qn")
+        
         if(not doIntersect(P1X,P1Y,P2X,P2Y,vertices[i][0],vertices[i][1],vertices[(i+1)%len(vertices)][0],vertices[(i+1)%len(vertices)][1]) and not inside((P1X + P2X)/2 , (P1Y + P2Y)/2)):
-            print("dont")
+            
             continue
         else:
             do = True
@@ -154,11 +150,11 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
            
             P2X = (P1X +t_e * dirLX)
             P2Y = (P1Y + t_e * dirLY)
-            print(gP1X ,gP1Y,P2X,P2Y)
+           
     if(do == True):
-        print(bP1X ,bP1Y,P2X,P2Y)
+       
 
-        drawLineCustom(bP1X, bP1Y, P2X, P2Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
+        drawlineCustom(bP1X, bP1Y, P2X, P2Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
 
     
 minX = 1000000
@@ -177,26 +173,20 @@ def doIntersect(ax1,ay1,ax2,ay2,bx1,by1,bx2,by2):
          
 
 
-minX= 1000000
-minY = 1000000
-maxX = -1
 
-for vertice in vertices:
-    if(vertice[0] < minX):
-        minX = vertice[0]
 lineseVertices = []
 def cyrusBecking():
-    print(len(lineseVertices))
+   
     for i in range(0, len(lineseVertices),2):
         
         P1X = lineseVertices[i][0]
         P1Y = lineseVertices[i][1]
         P2X = lineseVertices[(i+1)%len(lineseVertices)][0]
         P2Y = lineseVertices[(i+1)%len(lineseVertices)][1]
-        drawLineCustom(P1X,P1Y,P2X,P2Y,[0,0,0])
+        drawlineCustom(P1X,P1Y,P2X,P2Y,[0,0,0])
         cyrusBeck(P1X, P1Y, P2X, P2Y)
 edges = []
-def drawLineCustom(x1,y1,x2,y2,color):
+def drawlineCustom(x1,y1,x2,y2,color):
        
     length = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
     vector = ((x2 - x1) / length, (y2 - y1) / length)
@@ -209,30 +199,13 @@ def drawLineCustom(x1,y1,x2,y2,color):
             break
 
 
-def deleteLine(x,y):
-    
-    index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
- 
-    for i in range(index, index + 6):
-        buffer[i] = 0
-        buffer[i+1] = 0
-        buffer[i+2] = 0
-    for i in range(index+3000, index+3000 + 6):
-        buffer[i] = 0
-        buffer[i+1] = 0
-        buffer[i+2] = 0
-    for i in range(index-3000, index-3000 + 6):
-        buffer[i] = 0
-        buffer[i+1] = 0
-        buffer[i+2] = 0
-
 def key_callback(window, key, scancode, action, mods):
     global vertices, fl, cx, cy, futurepointsup, futurepointsdown, downleft, upright, lineseVertices,mass_center,minX,minY,maxX,maxY
     if action == glfw.PRESS:
         if key == glfw.KEY_ENTER:
             if fl == 0:
                 fl = 1
-                drawline(vertices[len(vertices) - 1][0], vertices[len(vertices) - 1][1], vertices[0][0], vertices[0][1])
+                drawlineCustom(vertices[len(vertices) - 1][0], vertices[len(vertices) - 1][1], vertices[0][0], vertices[0][1],[255,255,255])
                 edges.append([[vertices[len(vertices) - 1][0],
                              vertices[len(vertices) - 1][1]],[vertices[0][0], vertices[0][1]]])
                 for i in range(len(vertices)):
@@ -266,50 +239,6 @@ def key_callback(window, key, scancode, action, mods):
         if key == glfw.KEY_BACKSPACE:
             cyrusBecking()
 
- 
-def drawpixel(x, y):
-    index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
- 
-    for i in range(index, index + 6):
-        buffer[i] = 255
-       
- 
-    for i in range(index + 3000, index + 3006):
-        buffer[i] = 255
-       
-def drawline(x1, y1, x2, y2):
-   
-    length = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
-    vector = ((x2 - x1) / length, (y2 - y1) / length)
- 
-    while True:
-        x1 += vector[0]
-        y1 += vector[1]
-        drawpixel(x1, y1)
-        if math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) < 1:
-            break
-def drawlineRed(x1, y1, x2, y2):
-   
-    length = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
-    vector = ((x2 - x1) / length, (y2 - y1) / length)
- 
-    while True:
-        x1 += vector[0]
-        y1 += vector[1]
-        drawpixelRed(x1, y1)
-        if math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) < 1:
-            break
-def drawlineGreen(x1, y1, x2, y2):
-   
-    length = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
-    vector = ((x2 - x1) / length, (y2 - y1) / length)
- 
-    while True:
-        x1 += vector[0]
-        y1 += vector[1]
-        drawpixelGreen(x1, y1)
-        if math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) < 1:
-            break
 
 
  
