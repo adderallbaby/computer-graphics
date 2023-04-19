@@ -2,6 +2,8 @@ import math
 import glfw
 import random
 from OpenGL.GL import *
+import random
+import math
 import numpy as np
 mult = lambda a, b: a.x * b.x + a.y * b.y
 buffer = bytearray(1000 * 1000 * 3)
@@ -61,32 +63,28 @@ def mouse_button(window, button, action, mods):
                 if len(lineseVertices) % 2 == 0:
                     drawline(lineseVertices[len(lineseVertices) - 2][0], lineseVertices[len(lineseVertices) - 2][1], lineseVertices[len(lineseVertices) - 1][0],
                              lineseVertices[len(lineseVertices) - 1][1])
-def drawpixelGreen(x, y):
+def drawpixelCustom(x, y,color):
     index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
      
     for i in range(index-3000, index-3000 + 6,3):
-        buffer[i] = 0
-        buffer[i+2] = 0
-        buffer[i+3] = 255  
+        buffer[i] = color[0]
+        buffer[i+1] = color[1]
+        buffer[i+2] = color[2]
     for i in range(index, index + 6,3):
-        buffer[i] = 0
-        buffer[i+2] = 0
-        buffer[i+3] = 255
+        buffer[i] = color[0]
+        buffer[i+1] = color[1]
+        buffer[i+2] = color[2]
     for i in range(index+3000, index+3000 + 6,3):
-        buffer[i] = 0
-        buffer[i+2] = 0
-        buffer[i+3] = 255
+        buffer[i] = color[0]
+        buffer[i+1] = color[1]
+        buffer[i+2] = color[2]
 
 def drawpixelRed(x, y):
     index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
  
-    for i in range(index, index + 6):
-        buffer[i] = 0
-        buffer[i+1] = 255
- 
-    for i in range(index + 3000, index + 3006):
-        buffer[i] = 0
-        buffer[i+1] = 255
+    for i in range(index, index + 6,3):
+        buffer[i] = 255
+        
 
 def mult(a,b):
     return a[0] * b[0] + a[1] * b[1]
@@ -95,8 +93,9 @@ def isInternal(N, i):
     edgeY = vertices[(i+2)%len(vertices)][1] - vertices[i][1]
     return mult([edgeX,edgeY], N) > 0
 def cyrusBeck(P1X, P1Y, P2X,  P2Y):
-
+    global minX
     #global gP2X, gP1X, gP2Y, gP1Y
+    
     t_b = 0.0
     t_e = 1.0
     dirLX = P2X - P1X
@@ -107,6 +106,7 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
     bP2Y = P2Y
     
     counter = 0
+    do = False
     for i in range(len(vertices)):
         gP1X = 0
         gP2X = 0
@@ -120,7 +120,7 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
             N = [edgeDirY, -edgeDirX]
 
         counter+=1
-        drawlineRed((vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2 ,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2,(vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2+ N[0],(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2+ N[1])
+        drawLineCustom((vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2 ,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2,(vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2+ N[0]/5,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2+ N[1]/5,[255,0,0])
        
         Qx = P1X - (vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2
         Qy = P1Y - (vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2
@@ -128,15 +128,13 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
 
         Q = [Qx, Qy]
         Pn = mult(dirL, N)
-
         Qn = mult(Q, N)
-        if(Pn == 0):
-            if(Qn < 0):
-                break
-            else:
-                continue
- 
+        print(Pn,"Pn",  Qn, "Qn")
+        if(not doIntersect(P1X,P1Y,P2X,P2Y,vertices[i][0],vertices[i][1],vertices[(i+1)%len(vertices)][0],vertices[(i+1)%len(vertices)][1])):
+            print("dont")
+            continue
         else:
+            do = True
             t = - float(Qn) / float(Pn)
       
             if Pn > 0:
@@ -149,36 +147,79 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
                 t_e = min(t_e, t)
        
         
-            gP1X = (P1X + t_b * dirLX)
-            gP1Y =  (P1Y + t_b * dirLY)
+            bP1X = (P1X + t_b * dirLX)
+            bP1Y =  (P1Y + t_b * dirLY)
            
             P2X = (P1X +t_e * dirLX)
             P2Y = (P1Y + t_e * dirLY)
             print(gP1X ,gP1Y,P2X,P2Y)
-    drawlineGreen(gP1X, gP1Y, P2X, P2Y)
+    if(do == True):
+        print(bP1X ,bP1Y,P2X,P2Y)
 
-            
+        drawLineCustom(bP1X, bP1Y, P2X, P2Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
 
-       
-  
+    
 
+def doIntersect(ax1,ay1,ax2,ay2,bx1,by1,bx2,by2):
+    v1 = (bx2-bx1)*(ay1-by1)-(by2-by1)*(ax1-bx1)
+    v2 = (bx2-bx1)*(ay2-by1)-(by2-by1)*(ax2-bx1)
+    v3 = (ax2-ax1)*(by1-ay1)-(ay2-ay1)*(bx1-ax1)
+    v4 = (ax2-ax1)*(by2-ay1)-(ay2-ay1)*(bx2-ax1)
+    return (v1*v2) < 0 and (v3*v4) < 0
 
         
         
          
 
 
+minX= 1000000
+minY = 1000000
+maxX = -1
 
+for vertice in vertices:
+    if(vertice[0] < minX):
+        minX = vertice[0]
 lineseVertices = []
 def cyrusBecking():
     print(len(lineseVertices))
     for i in range(0, len(lineseVertices),2):
+        
         P1X = lineseVertices[i][0]
         P1Y = lineseVertices[i][1]
         P2X = lineseVertices[(i+1)%len(lineseVertices)][0]
         P2Y = lineseVertices[(i+1)%len(lineseVertices)][1]
+        drawLineCustom(P1X,P1Y,P2X,P2Y,[0,0,0])
         cyrusBeck(P1X, P1Y, P2X, P2Y)
 edges = []
+def drawLineCustom(x1,y1,x2,y2,color):
+       
+    length = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+    vector = ((x2 - x1) / length, (y2 - y1) / length)
+ 
+    while True:
+        x1 += vector[0]
+        y1 += vector[1]
+        drawpixelCustom(x1, y1,color)
+        if math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) < 1:
+            break
+
+
+def deleteLine(x,y):
+    
+    index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
+ 
+    for i in range(index, index + 6):
+        buffer[i] = 0
+        buffer[i+1] = 0
+        buffer[i+2] = 0
+    for i in range(index+3000, index+3000 + 6):
+        buffer[i] = 0
+        buffer[i+1] = 0
+        buffer[i+2] = 0
+    for i in range(index-3000, index-3000 + 6):
+        buffer[i] = 0
+        buffer[i+1] = 0
+        buffer[i+2] = 0
 
 def key_callback(window, key, scancode, action, mods):
     global vertices, fl, cx, cy, futurepointsup, futurepointsdown, downleft, upright, lineseVertices,mass_center
