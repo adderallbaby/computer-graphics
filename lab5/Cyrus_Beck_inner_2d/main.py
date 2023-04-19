@@ -52,7 +52,7 @@ def mouse_button(window, button, action, mods):
                     edge =([[vertices[len(vertices) - 2][0], vertices[len(vertices) - 2][1]],[vertices[len(vertices) - 1][0],
                              vertices[len(vertices) - 1][1]]])
                     edges.append(edge)
-                    mass_center += cx
+
 
             else: 
                 drawpixel(cx, cy)
@@ -64,18 +64,19 @@ def mouse_button(window, button, action, mods):
 def drawpixelGreen(x, y):
     index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
      
-    for i in range(index-3000, index-3000 + 6):
+    for i in range(index-3000, index-3000 + 6,3):
         buffer[i] = 0
         buffer[i+2] = 0
         buffer[i+3] = 255  
-    for i in range(index, index + 6):
-        buffer[i] = 0
-        buffer[i+2] = 0
-        buffer[i+3] = 255 
-    for i in range(index + 3000, index + 3006):
+    for i in range(index, index + 6,3):
         buffer[i] = 0
         buffer[i+2] = 0
         buffer[i+3] = 255
+    for i in range(index+3000, index+3000 + 6,3):
+        buffer[i] = 0
+        buffer[i+2] = 0
+        buffer[i+3] = 255
+
 def drawpixelRed(x, y):
     index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
  
@@ -166,12 +167,8 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
         
          
 
-def perpendicular( a ) :
-    b = np.empty_like(a)
-    b[0] = -a[1]
-    b[1] = a[0]
-    return b
-mass_center = 0
+
+
 lineseVertices = []
 def cyrusBecking():
     print(len(lineseVertices))
@@ -182,9 +179,7 @@ def cyrusBecking():
         P2Y = lineseVertices[(i+1)%len(lineseVertices)][1]
         cyrusBeck(P1X, P1Y, P2X, P2Y)
 edges = []
-def normalize(a):
-    a = np.array(a)
-    return a/np.linalg.norm(a) 
+
 def key_callback(window, key, scancode, action, mods):
     global vertices, fl, cx, cy, futurepointsup, futurepointsdown, downleft, upright, lineseVertices,mass_center
     if action == glfw.PRESS:
@@ -194,8 +189,7 @@ def key_callback(window, key, scancode, action, mods):
                 drawline(vertices[len(vertices) - 1][0], vertices[len(vertices) - 1][1], vertices[0][0], vertices[0][1])
                 edges.append([[vertices[len(vertices) - 1][0],
                              vertices[len(vertices) - 1][1]],[vertices[0][0], vertices[0][1]]])
-                mass_center = mass_center / (len(vertices))
-        
+                      
             else:
                 cx = 0
                 cy = 0
@@ -270,131 +264,7 @@ def check(x, y):
     else:
         return False
  
- 
-def filllineup(x, y):
-    if check(x, y):
-        return
- 
-    global futurepointsup
-    up = False
-    x0 = x
- 
-    while True:
- 
-        if check(x, y):
-            minx = x + 1
-            break
- 
-        if not up and not check(x, y + 1):
-            futurepointsup.append([x, y + 1])
-            up = True
- 
-        if check(x, y + 1):
-            up = False
- 
-        x -= 1
- 
-    x = x0
-    while True:
- 
-        if check(x, y):
-            maxx = x
-            break
- 
-        if not up and not check(x, y + 1):
-            futurepointsup.append([x, y + 1])
-            up = True
- 
-        if check(x, y + 1):
-            up = False
- 
-        x += 1
- 
-    for i in range(minx, maxx):
-        drawpixel(i, y)
- 
- 
-def filllinedown(x, y):
-    if check(x, y):
-        return
- 
-    global futurepointsdown
-    down = False
-    x0 = x
- 
-    while True:
- 
-        if check(x, y):
-            minx = x + 1
-            break
- 
-        if not down and not check(x, y - 1):
-            futurepointsdown.append([x, y - 1])
-            down = True
- 
-        if check(x, y + 1):
-            down = False
- 
-        x -= 1
- 
-    x = x0
-    while True:
- 
-        if check(x, y):
-            maxx = x
-            break
- 
-        if not down and not check(x, y - 1):
-            futurepointsdown.append([x, y - 1])
-            down = True
- 
-        if check(x, y - 1):
-            down = False
- 
-        x += 1
- 
-    for i in range(minx, maxx):
-        drawpixel(i, y)
- 
- 
-def getAllPixels(i):
-    toUpdateR = 0
-    toUpdateR += buffer[i + 3]
-    toUpdateR += buffer[i - 3]
-    toUpdateR += buffer[i + 3000]
-    toUpdateR += buffer[i - 3000]
-    toUpdateR += buffer[i + 3003]
-    toUpdateR += (buffer[i - 3003])
-    toUpdateR += buffer[i + 2997]
-    toUpdateR += (buffer[i - 2997])
- 
-    return toUpdateR // 8
- 
- 
-def updateAllNeighbours(i, newVal):
-    buffer[i] = newVal
-    buffer[i - 3] = newVal
-    buffer[i + 3] = newVal
-    buffer[i + 3000] = newVal
-    buffer[i + 3003] = newVal
-    buffer[i + 2997] = newVal
-    buffer[i - 3003] = newVal
-    buffer[i - 3000] = newVal
-    buffer[i - 2997] = newVal
- 
- 
-def slidingWindow():
-    start = downleft[0] * 2 * 3 + downleft[1] * 2 * 1000 * 3
-    end = upright[0] * 2 * 3 + upright[1] * 2 * 1000 * 3
-    for i in range(start, end):
-        if buffer[i] != 0 or buffer[i + 1] != 0 or buffer[i + 2] != 0:
-            toUpdateR = getAllPixels(i)
-            toUpdateG = getAllPixels(i + 1)
-            toUpdateB = getAllPixels(i + 2)
-            updateAllNeighbours(i, toUpdateR)
-            updateAllNeighbours(i + 1, toUpdateG)
-            updateAllNeighbours(i + 2, toUpdateB)
- 
+
  
 def main():
     if not glfw.init():
