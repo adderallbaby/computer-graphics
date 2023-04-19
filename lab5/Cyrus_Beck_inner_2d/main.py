@@ -85,7 +85,9 @@ def drawpixelRed(x, y):
     for i in range(index, index + 6,3):
         buffer[i] = 255
         
-
+def inside(x,y):
+    print(maxX, minX,maxY,minY)
+    return x < maxX and x > minX and y < maxY and y > minY
 def mult(a,b):
     return a[0] * b[0] + a[1] * b[1]
 def isInternal(N, i):
@@ -130,7 +132,7 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
         Pn = mult(dirL, N)
         Qn = mult(Q, N)
         print(Pn,"Pn",  Qn, "Qn")
-        if(not doIntersect(P1X,P1Y,P2X,P2Y,vertices[i][0],vertices[i][1],vertices[(i+1)%len(vertices)][0],vertices[(i+1)%len(vertices)][1])):
+        if(not doIntersect(P1X,P1Y,P2X,P2Y,vertices[i][0],vertices[i][1],vertices[(i+1)%len(vertices)][0],vertices[(i+1)%len(vertices)][1]) and not inside((P1X + P2X)/2 , (P1Y + P2Y)/2)):
             print("dont")
             continue
         else:
@@ -159,7 +161,10 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
         drawLineCustom(bP1X, bP1Y, P2X, P2Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
 
     
-
+minX = 1000000
+maxX = -1
+maxY = -1
+minY = 100000
 def doIntersect(ax1,ay1,ax2,ay2,bx1,by1,bx2,by2):
     v1 = (bx2-bx1)*(ay1-by1)-(by2-by1)*(ax1-bx1)
     v2 = (bx2-bx1)*(ay2-by1)-(by2-by1)*(ax2-bx1)
@@ -222,7 +227,7 @@ def deleteLine(x,y):
         buffer[i+2] = 0
 
 def key_callback(window, key, scancode, action, mods):
-    global vertices, fl, cx, cy, futurepointsup, futurepointsdown, downleft, upright, lineseVertices,mass_center
+    global vertices, fl, cx, cy, futurepointsup, futurepointsdown, downleft, upright, lineseVertices,mass_center,minX,minY,maxX,maxY
     if action == glfw.PRESS:
         if key == glfw.KEY_ENTER:
             if fl == 0:
@@ -230,6 +235,18 @@ def key_callback(window, key, scancode, action, mods):
                 drawline(vertices[len(vertices) - 1][0], vertices[len(vertices) - 1][1], vertices[0][0], vertices[0][1])
                 edges.append([[vertices[len(vertices) - 1][0],
                              vertices[len(vertices) - 1][1]],[vertices[0][0], vertices[0][1]]])
+                for i in range(len(vertices)):
+                    x = (vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2
+                    y = (vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2
+                    if(x < minX):
+                        minX = x
+                    if(x > maxX):
+                        maxX = x
+                    if(y < minY):
+                        minY = y
+                    if(y > maxY):
+                        maxY = y
+
                       
             else:
                 cx = 0
