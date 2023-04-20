@@ -5,19 +5,31 @@ from OpenGL.GL import *
 import random
 import math
 import numpy as np
-mult = lambda a, b: a.x * b.x + a.y * b.y
+"""
+
+АЛГОРИТМ КИРУСА_БЕКА
+Обрезает все снаружи, остаются только объекты внутри
+2D
+
+Еще рисует внутренние нормали к каждой из сторон окна (и пруф что они нормали)
+"""
+
 buffer = bytearray(1000 * 1000 * 3)
 cx = 0
 cy = 0
-
 vertices = []
-futurepointsup = []
-futurepointsdown = []
+toClean = bytearray(1000 * 1000 * 3)
 fl = 0
-downleft = [500, 500]
-upright = [0, 0]
- 
+minX = 1000000
+maxX = -1
+maxY = -1
+minY = 100000
+lineseVertices = []
+
 for j in range(0, 1000 * 1000):
+    toClean[j * 3 + 1] = 0
+    toClean[j * 3 + 2] = 0
+    toClean[j * 3] = 0
     buffer[j * 3] = 0
     buffer[j * 3 + 1] = 0
     buffer[j * 3 + 2] = 0
@@ -29,32 +41,14 @@ def cursor_pos(window, xpos, ypos):
     cy = round(500 - ypos)
  
 def mouse_button(window, button, action, mods):
-    global cx, cy, fl, futurepointsup, futurepointsdown, upright, downleft,vertices, lineseVertices,mass_center
+    global cx, cy, fl,vertices, lineseVertices,mass_center
     if action == glfw.PRESS:
         if button == glfw.MOUSE_BUTTON_LEFT:
-            if fl  == 0:
- 
-                if cx > upright[0]:
-                    upright[0] = cx
- 
-                if cx < downleft[0]:
-                    downleft[0] = cx
-    
-                if cy > upright[1]:
-                    upright[1] = cy
-    
-                if cy < downleft[1]:
-                    downleft[1] = cy
-    
+            if fl  == 0: 
                 drawpixelCustom(cx, cy,[255,255,255])
                 vertices.append([cx, cy])
                 if len(vertices) > 1:
                     drawlineCustom(vertices[len(vertices) - 2][0], vertices[len(vertices) - 2][1], vertices[len(vertices) - 1][0],vertices[len(vertices) - 1][1],[255,255,255])
-                    edge =([[vertices[len(vertices) - 2][0], vertices[len(vertices) - 2][1]],[vertices[len(vertices) - 1][0],
-                             vertices[len(vertices) - 1][1]]])
-                    edges.append(edge)
-
-
             else: 
                 drawpixelCustom(cx, cy,[255,255,255])
                  
@@ -66,7 +60,6 @@ def mouse_button(window, button, action, mods):
 
 def drawpixelCustom(x, y,color):
     index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
-     
     for i in range(index-3000, index-3000 + 6,3):
         buffer[i] = color[0]
         buffer[i+1] = color[1]
@@ -80,16 +73,18 @@ def drawpixelCustom(x, y,color):
         buffer[i+1] = color[1]
         buffer[i+2] = color[2]
 
-
 def inside(x,y):
 
-    return x < maxX and x > minX and y < maxY and y > minY
+    return (x < maxX and x > minX and y < maxY and y > minY) 
+
 def mult(a,b):
     return a[0] * b[0] + a[1] * b[1]
+
 def isInternal(N, i):
     edgeX = vertices[(i+2)%len(vertices)][0] - vertices[i][0]
     edgeY = vertices[(i+2)%len(vertices)][1] - vertices[i][1]
     return mult([edgeX,edgeY], N) > 0
+
 def cyrusBeck(P1X, P1Y, P2X,  P2Y):
     global minX
     #global gP2X, gP1X, gP2Y, gP1Y
@@ -119,7 +114,7 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
 
         counter+=1
         drawlineCustom((vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2 ,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2,(vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2+ N[0]/5,(vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2+ N[1]/5,[255,0,0])
-       
+        drawRectangle((vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2+ N[0]/15, (vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2+ N[1]/15, [-N[1], N[0]], [255,0,0])
         Qx = P1X - (vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2
         Qy = P1Y - (vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2
         dirL = [dirLX, dirLY]
@@ -127,7 +122,7 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
         Q = [Qx, Qy]
         Pn = mult(dirL, N)
         Qn = mult(Q, N)
-        
+
         if(not doIntersect(P1X,P1Y,P2X,P2Y,vertices[i][0],vertices[i][1],vertices[(i+1)%len(vertices)][0],vertices[(i+1)%len(vertices)][1]) and not inside((P1X + P2X)/2 , (P1Y + P2Y)/2)):
             
             continue
@@ -154,13 +149,14 @@ def cyrusBeck(P1X, P1Y, P2X,  P2Y):
     if(do == True):
        
 
-        drawlineCustom(bP1X, bP1Y, P2X, P2Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
+        drawlineCustom(bP1X, bP1Y,P2X, P2Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
+        #drawlineCustom(P1X, P1Y, bP1X, bP1Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
+        #drawlineCustom(P2X, P2Y, bP2X, bP2Y,[random.randint(0,255),random.randint(0,255),random.randint(0,255)])
+
+
 
     
-minX = 1000000
-maxX = -1
-maxY = -1
-minY = 100000
+
 def doIntersect(ax1,ay1,ax2,ay2,bx1,by1,bx2,by2):
     v1 = (bx2-bx1)*(ay1-by1)-(by2-by1)*(ax1-bx1)
     v2 = (bx2-bx1)*(ay2-by1)-(by2-by1)*(ax2-bx1)
@@ -169,12 +165,15 @@ def doIntersect(ax1,ay1,ax2,ay2,bx1,by1,bx2,by2):
     return (v1*v2) < 0 and (v3*v4) < 0
 
         
-        
+def drawRectangle(x,y, vector, color):
+    drawlineCustom(x,y, x+vector[0]/15, y+vector[1]/15, color)
+    drawlineCustom(x+vector[0]/15, y+vector[1]/15, x+vector[0]/15 + (-vector[1])/15, y+vector[1]/15 + vector[0]/15, color)
+
          
 
 
 
-lineseVertices = []
+
 def cyrusBecking():
    
     for i in range(0, len(lineseVertices),2):
@@ -185,7 +184,7 @@ def cyrusBecking():
         P2Y = lineseVertices[(i+1)%len(lineseVertices)][1]
         drawlineCustom(P1X,P1Y,P2X,P2Y,[0,0,0])
         cyrusBeck(P1X, P1Y, P2X, P2Y)
-edges = []
+
 def drawlineCustom(x1,y1,x2,y2,color):
        
     length = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
@@ -200,14 +199,13 @@ def drawlineCustom(x1,y1,x2,y2,color):
 
 
 def key_callback(window, key, scancode, action, mods):
-    global vertices, fl, cx, cy, futurepointsup, futurepointsdown, downleft, upright, lineseVertices,mass_center,minX,minY,maxX,maxY
+    global vertices, fl, cx, cy, upright, lineseVertices,mass_center,minX,minY,maxX,maxY, toClean, buffer
     if action == glfw.PRESS:
         if key == glfw.KEY_ENTER:
             if fl == 0:
                 fl = 1
                 drawlineCustom(vertices[len(vertices) - 1][0], vertices[len(vertices) - 1][1], vertices[0][0], vertices[0][1],[255,255,255])
-                edges.append([[vertices[len(vertices) - 1][0],
-                             vertices[len(vertices) - 1][1]],[vertices[0][0], vertices[0][1]]])
+               
                 for i in range(len(vertices)):
                     x = (vertices[i][0] + vertices[(i+1)%len(vertices)][0])/2
                     y = (vertices[i][1] + vertices[(i+1)%len(vertices)][1])/2
@@ -221,48 +219,33 @@ def key_callback(window, key, scancode, action, mods):
                         maxY = y
 
                       
-            else:
-                cx = 0
-                cy = 0
-                vertices = []
-                futurepointsup = []
-                futurepointsdown = []
-                fl = 0
-                downleft = [500, 500]
-                upright = [0, 0]
+        
+               
  
-                for i in range(0, 1000 * 1000):
-                    buffer[i * 3] = 0
-                    buffer[i * 3 + 1] = 0
-                    buffer[i * 3 + 2] = 0
-
         if key == glfw.KEY_BACKSPACE:
-            cyrusBecking()
+            if(len(lineseVertices) % 2==0):
+                cyrusBecking()
+        if key == glfw.KEY_C:
+          
+            buffer = toClean.copy()
+            vertices = []
+            lineseVertices = []
+            fl = 0
+            cx = 0 
+            cy = 0
 
-
-
- 
-def check(x, y):
-    index = round(x) * 2 * 3 + round(y) * 2 * 1000 * 3
-    if index >= len(buffer):
-        return True
-    if buffer[index] != 0 or buffer[index + 1] != 0 or buffer[index + 2] != 0:
-        return True
-    else:
-        return False
- 
 
  
 def main():
     if not glfw.init():
         return
  
-    window = glfw.create_window(500, 500, "lab4", None, None)
+    window = glfw.create_window(500, 500, "lab5", None, None)
  
     if not window:
         glfw.terminate()
         return
- 
+     
     glfw.make_context_current(window)
     glfw.set_cursor_pos_callback(window, cursor_pos)
     glfw.set_mouse_button_callback(window, mouse_button)
