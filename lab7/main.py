@@ -17,10 +17,10 @@ def read_rows(path):
     pixel_index = 0
 
     while True:
-        if pixel_index == 240:
+        if pixel_index == 512:
             pixel_index = 0
             rows.insert(0, row)
-            if len(row) != 240 * 3:
+            if len(row) != 512 * 3:
                 raise Exception("Row length is not 1920*3 but " + str(len(row)) + " / 3.0 = " + str(len(row) / 3.0))
             row = []
         pixel_index += 1
@@ -31,7 +31,7 @@ def read_rows(path):
 
         if len(r_string) == 0:
             # This is expected to happen when we've read everything.
-            if len(rows) !=240:
+            if len(rows) !=512:
                 print(
                     "Warning!!! Read to the end of the file at the correct sub-pixel (red) but we've not read 1080 rows!"
                 )
@@ -65,7 +65,7 @@ def repack_sub_pixels(rows):
         for sub_pixel in row:
             sub_pixels.append(sub_pixel)
 
-    diff = len(sub_pixels) - 240 * 240 * 3
+    diff = len(sub_pixels) - 512 * 512 * 3
     print("Packed", len(sub_pixels), "sub-pixels.")
     if diff != 0:
         print(
@@ -86,7 +86,7 @@ def repack_sub_pixels(rows):
 
 
 """
-rows = read_rows("240.bmp")
+rows = read_rows("7.bmp")
 image = repack_sub_pixels(rows)
 
 sc = 0.1
@@ -159,74 +159,64 @@ colors = (
     )
 def drawFigure(x, y, z, angle1, angle2, angle3, s):
     glScalef(s, s, s)
+    glEnable(GL_DEPTH_TEST)
+
     lines = False
+
     glTranslatef(x, y, z)
     glRotatef(angle1, 1, 0, 0)
     glRotatef(angle2, 0, 1, 0)
     glRotatef(angle3, 0, 0, 1)
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY)
 
-    if lines:
-        glBegin(GL_LINES)
-        for edge in edges:
-            glColor3fv((1, 1, 1))
-            for vertex in edge:
-                glVertex3fv(vertices[vertex])
-        glEnd()
-    else:
-        glBegin(GL_QUADS)
-        glTexCoord2f(0.0, 0.0)
-        glVertex3f(-1.0, -1.0,  1.0)
-        glTexCoord2f(1.0, 0.0)
-        glVertex3f(1.0, -1.0,  1.0)
-        glTexCoord2f(1.0, 1.0)
-        glVertex3f(1.0,  1.0,  1.0)
-        glTexCoord2f(0.0, 1.0)
-        glVertex3f(-1.0,  1.0,  1.0)
-        glTexCoord2f(1.0, 0.0)
-        glVertex3f(-1.0, -1.0, -1.0)
-        glTexCoord2f(1.0, 1.0)
-        glVertex3f(-1.0,  1.0, -1.0)
-        glTexCoord2f(0.0, 1.0)
-        glVertex3f(1.0,  1.0, -1.0)
-        glTexCoord2f(0.0, 0.0)
-        glVertex3f(1.0, -1.0, -1.0)
-        glTexCoord2f(0.0, 1.0)
-        glVertex3f(-1.0,  1.0, -1.0)
-        glTexCoord2f(0.0, 0.0)
-        glVertex3f(-1.0,  1.0,  1.0)
-        glTexCoord2f(1.0, 0.0)
-        glVertex3f(1.0,  1.0,  1.0)
-        glTexCoord2f(1.0, 1.0)
-        glVertex3f(1.0,  1.0, -1.0)
-        glTexCoord2f(1.0, 1.0)
-        glVertex3f(-1.0, -1.0, -1.0)
-        glTexCoord2f(0.0, 1.0)
-        glVertex3f(1.0, -1.0, -1.0)
-        glTexCoord2f(0.0, 0.0)
-        glVertex3f(1.0, -1.0,  1.0)
-        glTexCoord2f(1.0, 0.0)
-        glVertex3f(-1.0, -1.0,  1.0)
-        glTexCoord2f(1.0, 0.0)
-        glVertex3f(1.0, -1.0, -1.0)
-        glTexCoord2f(1.0, 1.0)
-        glVertex3f(1.0,  1.0, -1.0)
-        glTexCoord2f(0.0, 1.0)
-        glVertex3f(1.0,  1.0,  1.0)
-        glTexCoord2f(0.0, 0.0)
-        glVertex3f(1.0, -1.0,  1.0)
-        glTexCoord2f(0.0, 0.0)
-        glVertex3f(-1.0, -1.0, -1.0)
-        glTexCoord2f(1.0, 0.0)
-        glVertex3f(-1.0, -1.0,  1.0)
-        glTexCoord2f(1.0, 1.0)
-        glVertex3f(-1.0,  1.0,  1.0)
-        glTexCoord2f(0.0, 1.0)
-        glVertex3f(-1.0,  1.0, -1.0)
-        glEnd()
+    back = [[-0.5  , 0.5 , -0.5 ], [-0.5 , -0.5 , -0.5 ], [0.5 , -0.5 , -0.5 ], [0.5 , 0.5 , -0.5 ]]
+    tback = [[-0.5 + 0.27 * 2, -0.5 + 0.25 * 2], [-0.5+ 0.27* 2, 0.5+ 0.25* 2],[0.5+ 0.27* 2, 0.5+ 0.25* 2] ,[0.5+ 0.27* 2, -0.5+ 0.25* 2]   ]
+
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glTexCoordPointer(2, GL_FLOAT, 0, tback)
+
+    glVertexPointer(3, GL_FLOAT, 0, back)
+    glDrawArrays(GL_POLYGON, 0, 4)
+    front = [[-0.5 , 0.5 , 0.5 ], [-0.5 , -0.5 , 0.5 ], [0.5 , -0.5 , 0.5 ], [0.5 , 0.5 , 0.5 ]]
+    glVertexPointer(3, GL_FLOAT, 0, front)
+    #glTexCoordPointer(8, GL_FLOAT, 0, front)
+    glDrawArrays(GL_POLYGON, 0, 4)
+    right = [[-0.5 , 0.5 , 0.5 ],  [0.5 , 0.5 , 0.5 ], [0.5 , 0.5 , -0.5 ],[-0.5 , 0.5 , -0.5 ]]
+    #tright = [[-0.5 + 0.27 * 2, -0.5 + 0.25 * 2], [0.5+ 0.27* 2, 0.5+ 0.25* 2] ,[0.5+ 0.27* 2, -0.5+ 0.25* 2],[-0.5+ 0.27* 2, 0.5+ 0.25* 2]]
+    glVertexPointer(3, GL_FLOAT, 0, right)
+    #glTexCoordPointer(3, GL_FLOAT, 0, tright)
+
+
+
+    #glTexCoordPointer(2, GL_FLOAT, 0, right)
+    glDrawArrays(GL_POLYGON, 0, 4)
+    left = [[-0.5 , -0.5 , 0.5 ],  [0.5 , -0.5 , 0.5 ], [0.5 , -0.5 , -0.5 ],[-0.5 , -0.5 , -0.5 ]]
+    glVertexPointer(3, GL_FLOAT, 0, left)
+    #glTexCoordPointer(3, GL_FLOAT, 0, left)
+    glDrawArrays(GL_POLYGON, 0, 4)
+    top = [[0.5 , -0.5 , -0.5 ], [0.5 , 0.5 , -0.5 ], [0.5 , 0.5 , 0.5 ], [0.5 , -0.5 , 0.5 ]]
+    glVertexPointer(3, GL_FLOAT, 0, top)
+    #glTexCoordPointer(3, GL_FLOAT, 0, top)
+    glDrawArrays(GL_POLYGON, 0, 4)
+    bottom =  [[-0.5 , -0.5 , -0.5 ], [-0.5 , 0.5 , -0.5 ], [-0.5 , 0.5 , 0.5 ], [-0.5 , -0.5 , 0.5 ]]
+    glVertexPointer(3, GL_FLOAT, 0, bottom)
+   # glTexCoordPointer(3, GL_FLOAT, 0, bottom)
+    glDrawArrays(GL_POLYGON, 0, 4)
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY)
+
+
+    glDisableClientState(GL_VERTEX_ARRAY)
+
+
+
+
+
+
+    glutSwapBuffers()
 
 
 #def Cube(cubeverts):
-#    glBegin(GL_QUADS)
+#    glBegin(GL_POLYGON)
 #    for surf in surfs:
 #        n = 0
 #        for vertex in surf:
@@ -247,27 +237,23 @@ def drawFigure(x, y, z, angle1, angle2, angle3, s):
 #            n += 1
 #    glEnd()
 #
+
 def light_on():
-    global light_position
-    global material_diffusion
-    global light_diffusion
-
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_diffusion)
-
-    light_spot_direction = [0.0, 0.0, -1.0]
+    glCallList(2)
+    
+def light_display_list():
+    glNewList(2, GL_COMPILE)
+    material_diffuse = [1, 1.0, 1.0, 1.0] 
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, material_diffuse)
+    light3_diffuse = [1, 1, 1]
+    light3_position = [0.0, 0.0, 1.0, 0.0]
+    light3_spot_direction = [0.0, 0.0, -1.0]
     glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHTING)
-    glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
-    glEnable(GL_NORMALIZE)
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_diffusion)
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
-    #glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 10)
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_spot_direction)
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, Kl)
-    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, Kq)
-    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, Kc)
-
-
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light3_diffuse)
+    glLightfv(GL_LIGHT0, GL_POSITION, light3_position)
+    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 10)
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light3_spot_direction)
+    glEndList()
 def display(window):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     if light:
@@ -315,10 +301,12 @@ def key_callback(window, key, scancode, action, mods):
             light_position[2] += 0.65
         if key == 51:
             x += 2.5
-            y += 2.5
+            y += 2.5 
+            glutPostRedisplay()
         if key == 52:
-            x -= 2.5
+            x -=2.5
             y -= 2.5
+            glutPostRedisplay()
         if key == glfw.KEY_DOWN:
             if moving:
                 global h0
@@ -338,30 +326,35 @@ def key_callback(window, key, scancode, action, mods):
 
 
 def main():
+ 
     if not glfw.init():
         return
-    window = glfw.create_window(900, 900, "lab6", None, None)
+    window = glfw.create_window(600, 600, "lab7", None, None)
     if not window:
         glfw.terminate()
         return
     glfw.make_context_current(window)
     glfw.set_key_callback(window, key_callback)
-    glClearColor(0.0, 0.0, 0.0, 1.0)
+    glClearColor(0.0, 0.0, .1, 1.0)
+
+    #glEnable(GL_CULL_FACE)
+    #glCullFace(GL_FRONT)
+    #glFrontFace(GL_CW)
 
     glGenTextures(1, texture)
     glBindTexture(GL_TEXTURE_2D, texture)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 240, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, image)
-    glGenerateMipmap(GL_TEXTURE_2D)
-    
-    glEnable(GL_CULL_FACE)
-    glCullFace(GL_FRONT)
-    glFrontFace(GL_CW)
-    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, image)
+    glGenerateMipmap(GL_TEXTURE_2D) 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (1,1,0,1))
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
+
+
+
+
 
     while not glfw.window_should_close(window):
         display(window)
