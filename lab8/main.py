@@ -239,9 +239,10 @@ def display():
     glPushMatrix()
  
     if moving:
-        glTranslatef(x, y, 0)
+        glTranslatef(0, 0, x)
         x += vx
         y += vy
+        vx -= 0.00051
  
         if x >= 3 and vx > 0:
             vx *= -1
