@@ -31,7 +31,7 @@ def read_rows(path):
 
         if len(r_string) == 0:
             # This is expected to happen when we've read everything.
-            if len(rows) !=512:
+            if len(rows) != 512:
                 print(
                     "Warning!!! Read to the end of the file at the correct sub-pixel (red) but we've not read 1080 rows!"
                 )
@@ -101,12 +101,12 @@ light = True
 moving = False
 it = False
 texture = 0
-light_position = [0., 0, -10.0, 1.0]
-material_diffusion = [1, 1, 1, 1.0]
-light_diffusion = [1, 1, 1]
-Kl = 0.0001
-Kq = 0.0002
-Kc = 0.0001
+light_position = [0., 0, 10.0, 1.0]
+material_diffusion = [10, 10, 10, 1.0]
+light_diffusion = [10, 10, 10]
+Kl = 0.01
+Kq = 0.002
+Kc = 0.001
 vertices = (
     # x  y  z
     (1, -1, -1),
@@ -134,29 +134,30 @@ edges = (
     (5, 7)
 )
 
-
 surfs = (
-    (0,1,2,3),
-    (3,2,7,6),
-    (6,7,5,4),
-    (4,5,1,0),
-    (1,5,7,2),
-    (4,0,3,6)
-    )
+    (0, 1, 2, 3),
+    (3, 2, 7, 6),
+    (6, 7, 5, 4),
+    (4, 5, 1, 0),
+    (1, 5, 7, 2),
+    (4, 0, 3, 6)
+)
 colors = (
-    (1,0,0),
-    (0,1,0),
-    (0,0,1),
-    (0,1,0),
-    (1,1,1),
-    (0,1,1),
-    (1,0,0),
-    (0,1,0),
-    (0,0,1),
-    (1,0,0),
-    (1,1,1),
-    (0,1,1),
-    )
+    (1, 0, 0),
+    (0, 1, 0),
+    (0, 0, 1),
+    (0, 1, 0),
+    (1, 1, 1),
+    (0, 1, 1),
+    (1, 0, 0),
+    (0, 1, 0),
+    (0, 0, 1),
+    (1, 0, 0),
+    (1, 1, 1),
+    (0, 1, 1),
+)
+
+
 def drawFigure(x, y, z, angle1, angle2, angle3, s):
     glScalef(s, s, s)
     glEnable(GL_DEPTH_TEST)
@@ -169,53 +170,45 @@ def drawFigure(x, y, z, angle1, angle2, angle3, s):
     glRotatef(angle3, 0, 0, 1)
     glEnableClientState(GL_TEXTURE_COORD_ARRAY)
 
-    back = [[-0.5  , 0.5 , -0.5 ], [-0.5 , -0.5 , -0.5 ], [0.5 , -0.5 , -0.5 ], [0.5 , 0.5 , -0.5 ]]
-    tback = [[-0.5 + 0.27 * 2, -0.5 + 0.25 * 2], [-0.5+ 0.27* 2, 0.5+ 0.25* 2],[0.5+ 0.27* 2, 0.5+ 0.25* 2] ,[0.5+ 0.27* 2, -0.5+ 0.25* 2]   ]
+    back = [[-0.5, 0.5, -0.5], [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, 0.5, -0.5]]
+    tback = [[-0.5 + 0.27 * 2, -0.5 + 0.25 * 2], [-0.5 + 0.27 * 2, 0.5 + 0.25 * 2], [0.5 + 0.27 * 2, 0.5 + 0.25 * 2],
+             [0.5 + 0.27 * 2, -0.5 + 0.25 * 2]]
 
     glEnableClientState(GL_VERTEX_ARRAY)
     glTexCoordPointer(2, GL_FLOAT, 0, tback)
 
     glVertexPointer(3, GL_FLOAT, 0, back)
     glDrawArrays(GL_POLYGON, 0, 4)
-    front = [[-0.5 , 0.5 , 0.5 ], [-0.5 , -0.5 , 0.5 ], [0.5 , -0.5 , 0.5 ], [0.5 , 0.5 , 0.5 ]]
+    front = [[-0.5, 0.5, 0.5], [-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5]]
     glVertexPointer(3, GL_FLOAT, 0, front)
-    #glTexCoordPointer(8, GL_FLOAT, 0, front)
+    # glTexCoordPointer(8, GL_FLOAT, 0, front)
     glDrawArrays(GL_POLYGON, 0, 4)
-    right = [[-0.5 , 0.5 , 0.5 ],  [0.5 , 0.5 , 0.5 ], [0.5 , 0.5 , -0.5 ],[-0.5 , 0.5 , -0.5 ]]
-    #tright = [[-0.5 + 0.27 * 2, -0.5 + 0.25 * 2], [0.5+ 0.27* 2, 0.5+ 0.25* 2] ,[0.5+ 0.27* 2, -0.5+ 0.25* 2],[-0.5+ 0.27* 2, 0.5+ 0.25* 2]]
+    right = [[-0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, -0.5], [-0.5, 0.5, -0.5]]
+    # tright = [[-0.5 + 0.27 * 2, -0.5 + 0.25 * 2], [0.5+ 0.27* 2, 0.5+ 0.25* 2] ,[0.5+ 0.27* 2, -0.5+ 0.25* 2],[-0.5+ 0.27* 2, 0.5+ 0.25* 2]]
     glVertexPointer(3, GL_FLOAT, 0, right)
-    #glTexCoordPointer(3, GL_FLOAT, 0, tright)
+    # glTexCoordPointer(3, GL_FLOAT, 0, tright)
 
-
-
-    #glTexCoordPointer(2, GL_FLOAT, 0, right)
+    # glTexCoordPointer(2, GL_FLOAT, 0, right)
     glDrawArrays(GL_POLYGON, 0, 4)
-    left = [[-0.5 , -0.5 , 0.5 ],  [0.5 , -0.5 , 0.5 ], [0.5 , -0.5 , -0.5 ],[-0.5 , -0.5 , -0.5 ]]
+    left = [[-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, -0.5, -0.5], [-0.5, -0.5, -0.5]]
     glVertexPointer(3, GL_FLOAT, 0, left)
-    #glTexCoordPointer(3, GL_FLOAT, 0, left)
+    # glTexCoordPointer(3, GL_FLOAT, 0, left)
     glDrawArrays(GL_POLYGON, 0, 4)
-    top = [[0.5 , -0.5 , -0.5 ], [0.5 , 0.5 , -0.5 ], [0.5 , 0.5 , 0.5 ], [0.5 , -0.5 , 0.5 ]]
+    top = [[0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [0.5, 0.5, 0.5], [0.5, -0.5, 0.5]]
     glVertexPointer(3, GL_FLOAT, 0, top)
-    #glTexCoordPointer(3, GL_FLOAT, 0, top)
+    # glTexCoordPointer(3, GL_FLOAT, 0, top)
     glDrawArrays(GL_POLYGON, 0, 4)
-    bottom =  [[-0.5 , -0.5 , -0.5 ], [-0.5 , 0.5 , -0.5 ], [-0.5 , 0.5 , 0.5 ], [-0.5 , -0.5 , 0.5 ]]
+    bottom = [[-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5], [-0.5, -0.5, 0.5]]
     glVertexPointer(3, GL_FLOAT, 0, bottom)
-   # glTexCoordPointer(3, GL_FLOAT, 0, bottom)
+    # glTexCoordPointer(3, GL_FLOAT, 0, bottom)
     glDrawArrays(GL_POLYGON, 0, 4)
     glDisableClientState(GL_TEXTURE_COORD_ARRAY)
-
 
     glDisableClientState(GL_VERTEX_ARRAY)
 
 
 
-
-
-
-    glutSwapBuffers()
-
-
-#def Cube(cubeverts):
+# def Cube(cubeverts):
 #    glBegin(GL_POLYGON)
 #    for surf in surfs:
 #        n = 0
@@ -240,22 +233,34 @@ def drawFigure(x, y, z, angle1, angle2, angle3, s):
 
 def light_on():
     glCallList(2)
-    
+
+
 def light_display_list():
     glNewList(2, GL_COMPILE)
-    material_diffuse = [1, 1.0, 1.0, 1.0] 
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, material_diffuse)
+    material_diffuse = [1, 1.0, 1.0, 1.0]
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_diffuse)
     light3_diffuse = [1, 1, 1]
     light3_position = [0.0, 0.0, 1.0, 0.0]
     light3_spot_direction = [0.0, 0.0, -1.0]
     glEnable(GL_LIGHT0)
+
+    glEnable(GL_LIGHTING)
+    glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
+    glEnable(GL_NORMALIZE)
+
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light3_diffuse)
     glLightfv(GL_LIGHT0, GL_POSITION, light3_position)
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 10)
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light3_spot_direction)
+    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, Kl)
+    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, Kq)
+    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, Kc)
     glEndList()
+
+
 def display(window):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
     if light:
         light_on()
     glMatrixMode(GL_MODELVIEW)
@@ -266,7 +271,7 @@ def display(window):
         drawFigure(0, 0, 0, x, y, z, 0.3)
         glPopMatrix()
     if moving:
-        global h0
+        global h03
         global v0
         glPushMatrix()
         drawFigure(0, h0, 0, x, y, z, 0.3)
@@ -301,13 +306,21 @@ def key_callback(window, key, scancode, action, mods):
             light_position[2] += 0.65
         if key == 51:
             x += 2.5
-            y += 2.5 
-            glutPostRedisplay()
+            y += 2.5
         if key == 52:
-            x -=2.5
+            x -= 2.5
             y -= 2.5
-            glutPostRedisplay()
+        if key == glfw.KEY_ENTER:
+            if light:
+                light = False
+                glDisable(GL_LIGHTING)
+            else:
+                glEnable(GL_LIGHTING)
+                glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
+                glEnable(GL_NORMALIZE)
+                light = True
         if key == glfw.KEY_DOWN:
+
             if moving:
                 global h0
                 global v0
@@ -326,7 +339,7 @@ def key_callback(window, key, scancode, action, mods):
 
 
 def main():
- 
+
     if not glfw.init():
         return
     window = glfw.create_window(600, 600, "lab7", None, None)
@@ -337,24 +350,20 @@ def main():
     glfw.set_key_callback(window, key_callback)
     glClearColor(0.0, 0.0, .1, 1.0)
 
-    #glEnable(GL_CULL_FACE)
-    #glCullFace(GL_FRONT)
-    #glFrontFace(GL_CW)
+    # glEnable(GL_CULL_FACE)
+    # glCullFace(GL_FRONT)
+    # glFrontFace(GL_CW)
 
     glGenTextures(1, texture)
     glBindTexture(GL_TEXTURE_2D, texture)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, image)
-    glGenerateMipmap(GL_TEXTURE_2D) 
+    glGenerateMipmap(GL_TEXTURE_2D)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (1,1,0,1))
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (1, 1, 0, 1))
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
-
-
-
-
 
     while not glfw.window_should_close(window):
         display(window)
